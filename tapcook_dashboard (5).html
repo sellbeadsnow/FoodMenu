@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapCook Pro Platform - v3.7 Enterprise Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --apple-bg: #f5f5f7;
+            --apple-card: #ffffff;
+            --apple-text: #1d1d1f;
+            --apple-secondary: #86868b;
+            --apple-accent: #0071e3;
+            --apple-border: #d2d2d7;
+            --sidebar-width: 260px;
+            --success-color: #34c759;
+            --warning-color: #ff9500;
+            --danger-color: #ff3b30;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--apple-bg);
+            color: var(--apple-text);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Collapsible Sidebar styling */
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--apple-card);
+            border-right: 1px solid var(--apple-border);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            overflow-x: hidden;
+        }
+
+        #sidebar.collapsed {
+            --sidebar-width: 68px;
+            width: 68px;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--apple-border);
+            white-space: nowrap;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--apple-accent);
+            font-size: 18px;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .collapse-btn:hover {
+            background-color: var(--apple-bg);
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 16px 8px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--apple-text);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            font-weight: 500;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            gap: 12px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #f0f0f4;
+            color: var(--apple-accent);
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--apple-border);
+            font-size: 12px;
+            color: var(--apple-secondary);
+            white-space: nowrap;
+        }
+
+        /* Main Workspace Panel Container (100% full-width expansion layout) */
+        #main-content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 40px;
+            transition: margin-left 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        body.sidebar-collapsed #main-content {
+            margin-left: 68px;
+            width: calc(100% - 68px);
+        }
+
+        .header-panel {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header-title h1 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            color: var(--apple-secondary);
+            font-size: 16px;
+        }
+
+        /* Strict Filter Header Badge Layer */
+        .restriction-bar {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .restriction-badge {
+            background: #ffffff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #e3a813;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        /* Grid Framework layouts */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .full-width-card {
+            grid-column: span 2;
+        }
+
+        .card {
+            background-color: var(--apple-card);
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            margin-bottom: 32px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Interactive Sliders Layout Grid (MeAgain Integration & Feature 2 Goals) */
+        .slider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .slider-box {
+            background: #fbfbfd;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--apple-border);
+        }
+
+        .slider-label {
+            font-size: 13px;
+            color: var(--apple-secondary);
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .apple-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e2e7;
+            outline: none;
+            transition: background 0.2s;
+        }
+
+        .apple-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--apple-accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Advanced Feature 2: Live SVG Macro Layout Visualizer */
+        .visualizer-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .svg-chart-wrapper {
+            background: #fbfbfd;
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid var(--apple-border);
+            display: flex;
+            justify-content: center;
+        }
+
+        .meagain-metrics-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metric-pill {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: #fbfbfd;
+            border: 1px solid var(--apple-border);
+        }
+
+        .metric-pill-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .metric-pill-val {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* 7-Day Weekly Calendar Menu Matrix Grid (Simple, Gout & Diabetes 2 Safe, Non-Spicy Indian/Western Mix) */
+        .calendar-scroll-wrapper {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .day-column {
+            background: #fbfbfd;
+            border-radius: 14px;
+            border: 1px solid var(--apple-border);
+            padding: 14px;
+        }
+
+        .day-title {
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--apple-border);
+            margin-bottom: 12px;
+            color: var(--apple-accent);
+        }
+
+        .meal-slot {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+
+        .meal-tag {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--apple-secondary);
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .meal-name {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .meal-meta {
+            font-size: 11px;
+            color: var(--apple-secondary);
+            margin-top: 4px;
+        }
+
+        /* Procurement Channel Map & Multi-Store Pricing Arbitrage */
+        .channel-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .channel-table th {
+            font-weight: 600;
+            color: var(--apple-secondary);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--apple-border);
+        }
+
+        .channel-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .price-instacart {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .price-instore {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .badge-store {
+            background: #e2e2e7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Tab panels visibility logic */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Utility classes */
+        .text-success { color: var(--success-color); }
+        .text-warning { color: var(--warning-color); }
+        .text-danger { color: var(--danger-color); }
+    </style>
+</head>
+<body>
+
+    <!-- Collapsible Sidebar Area -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-text">🍏 <span>TapCook Pro</span></div>
+            <button class="collapse-btn" onclick="toggleSidebar()">◂</button>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" id="btn-dashboard" onclick="switchTab('dashboard')">📊 <span>Dashboard Matrix</span></li>
+            <li class="nav-item" id="btn-calendar" onclick="switchTab('calendar')">🗓️ <span>Weekly Planner</span></li>
+            <li class="nav-item" id="btn-procurement" onclick="switchTab('procurement')">🛒 <span>Procurement Engine</span></li>
+        </ul>
+        <div class="sidebar-footer">
+            <div>Enterprise Node v3.7</div>
+            <div>User Profile: Age 52</div>
+            <div>Gout / T2D GLP-1 Safe</div>
+        </div>
+    </div>
+
+    <!-- Main Expansive Workspace Content Frame -->
+    <div id="main-content">
+        
+        <!-- Header Profile & Clinical Context Banner -->
+        <div class="header-panel">
+            <div class="header-title">
+                <h1>TapCook Control Dashboard Matrix</h1>
+                <div class="header-subtitle">Optimized Medical Profile Architecture: Age 52, Gout Management, Diabetes Type 2 (GLP-1 Supported), Mild Flavor Parameters</div>
+            </div>
+        </div>
+
+        <!-- Global Safety Restriction & Immunization Filters Stack -->
+        <div class="restriction-bar">
+            <span>🚫 <strong>Active Blueprint Elimination Flags:</strong></span>
+            <span class="restriction-badge">NO BEEF (High Purine / Saturated Fat Block)</span>
+            <span class="restriction-badge">NO SHELLFISH (Shrimp, Crab, Lobster Gout Hazard Core)</span>
+            <span class="restriction-badge">NO SEAFOOD (All Marine Fish &amp; Oils Purine Mitigation)</span>
+            <span class="restriction-badge">MILD SPICE MATRICES (Zero Hot Chili / Non-Spicy Indian Alignment)</span>
+            <span class="restriction-badge">LOW GLYCEMIC INDEX (High Protein / Fiber Balance for GLP-1)</span>
+        </div>
+
+        <!-- TAB 1: MAIN METRIC DASHBOARD PANEL -->
+        <div id="panel-dashboard" class="tab-panel active">
+            
+            <!-- MeAgain App Metric Slider Knobs Container -->
+            <div class="card">
+                <div class="card-title">⚙️ MeAgain App Predictive Analytics Tuning Sliders</div>
+                <div class="slider-grid">
+                    <div class="slider-box">
+                        <div class="slider-label"><span>Max Weekly Budget Limit</span><span id="lbl-budget">$160</span></div>
+                        <input type="range" class="apple-slider" id="slide-budget" min="100" max="300" value="160" oninput="updateDashboardMetrics()">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-label"><span>Protein Spoilage Window (Days)</span><span id="lbl-spoil">4 Days</span></div>
+                        <input type="range" class="apple-slider" id="slide-spoil" min="2" max="7" value="4" oninput="updateDashboardMetrics()">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-label"><span>Instacart Fulfillment Arbitrage Buffer</span><span id="lbl-arbitrage">1.15x</span></div>
+                        <input type="range" class="apple-slider" id="slide-arbitrage" min="1.05" max="1.30" step="0.01" value="1.15" oninput="updateDashboardMetrics()">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-label"><span>Daily Target Protein Cap (g)</span><span id="lbl-protein-target">110g</span></div>
+                        <input type="range" class="apple-slider" id="slide-protein-target" min="80" max="150" value="110" oninput="updateDashboardMetrics()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <!-- Advanced Feature 2: Live Macro & Metrics Layout Visualizer -->
+                <div class="card">
+                    <div class="card-title">📊 Feature 2: Live Data Visualizer Layout Integration</div>
+                    <div class="visualizer-container">
+                        
+                        <!-- SVG Native Render Frame Panel -->
+                        <div class="svg-chart-wrapper">
+                            <svg width="280" height="200" viewBox="0 0 280 200" id="macro-svg">
+                                <!-- Background grid marks -->
+                                <line x1="40" y1="20" x2="260" y2="20" stroke="#e2e2e7" stroke-dasharray="4"/>
+                                <line x1="40" y1="70" x2="260" y2="70" stroke="#e2e2e7" stroke-dasharray="4"/>
+                                <line x1="40" y1="120" x2="260" y2="120" stroke="#e2e2e7" stroke-dasharray="4"/>
+                                <line x1="40" y1="170" x2="260" y2="170" stroke="#1d1d1f" stroke-width="1.5"/>
+                                
+                                <!-- Bars (Animated heights calibrated dynamically) -->
+                                <!-- Protein Bar -->
+                                <rect id="bar-protein" x="65" y="45" width="35" height="125" rx="6" fill="#0071e3" />
+                                <text x="82.5" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#86868b">PROT</text>
+                                <text id="txt-svg-protein" x="82.5" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="#0071e3">112g</text>
+
+                                <!-- Carbs Bar -->
+                                <rect id="bar-carbs" x="135" y="85" width="35" height="85" rx="6" fill="#34c759" />
+                                <text x="152.5" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#86868b">CARB</text>
+                                <text id="txt-svg-carbs" x="152.5" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="#34c759">78g</text>
+
+                                <!-- Fats Bar -->
+                                <rect id="bar-fats" x="205" y="115" width="35" height="55" rx="6" fill="#ff9500" />
+                                <text x="222.5" y="190" text-anchor="middle" font-size="11" font-weight="600" fill="#86868b">FAT</text>
+                                <text id="txt-svg-fats" x="222.5" y="108" text-anchor="middle" font-size="12" font-weight="700" fill="#ff9500">46g</text>
+                            </svg>
+                        </div>
+
+                        <!-- MeAgain Predictive Analytics Readouts -->
+                        <div class="meagain-metrics-box">
+                            <div class="metric-pill">
+                                <span class="metric-pill-title">📉 Protein Wastage Probability</span>
+                                <span class="metric-pill-val text-success" id="val-wastage">14%</span>
+                            </div>
+                            <div class="metric-pill">
+                                <span class="metric-pill-title">🔄 Macro Compliance Index Score</span>
+                                <span class="metric-pill-val text-success" id="val-compliance">98%</span>
+                            </div>
+                            <div class="metric-pill">
+                                <span class="metric-pill-title">⚖️ Channel Cost Ratio Differential</span>
+                                <span class="metric-pill-val text-warning" id="val-differential">+16.4%</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Fast Mini Checklist Container Layout -->
+                <div class="card">
+                    <div class="card-title">📋 Auto-Compiled Side Checklist</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+                        <label><input type="checkbox" checked> 🍗 Skinless Chicken Breast Logs (Costco Warehouse)</label>
+                        <label><input type="checkbox" checked> 🥣 Low-Fat Plain Greek Yogurt Tub (Publix Retails)</label>
+                        <label><input type="checkbox"> 🌾 Organic Quinoa &amp; Brown Rice Seed Packs</label>
+                        <label><input type="checkbox"> 🥬 Fresh Baby Spinach Crisp Bundles</label>
+                        <label><input type="checkbox"> 🟡 Yellow Moong Dal Split Lentils (Mild Indian Base)</label>
+                        <div style="border-top: 1px solid var(--apple-border); margin-top: 10px; padding-top: 10px; color: var(--apple-secondary); font-size: 12px;">
+                            *Calculated relative to current clinical restrictions.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pre-filled 7-Day Weekly Calendar Menu Layout Card -->
+                <div class="card full-width-card">
+                    <div class="card-title">🗓️ Gout &amp; Diabetes Safe Mixed 7-Day Matrix Menu Grid</div>
+                    <div class="calendar-scroll-wrapper">
+                        <div class="calendar-grid" id="calendar-container">
+                            <!-- Injected dynamically via script below -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 2: EXTENDED CALENDAR DETAIL VIEW VIEWPORT -->
+        <div id="panel-calendar" class="tab-panel">
+            <div class="card">
+                <div class="card-title">🗓️ Detailed Weekly Meal Deployment &amp; Schedule Architecture</div>
+                <p style="color: var(--apple-secondary); margin-bottom: 20px; font-size: 15px;">
+                    This schedule blends simple Western elements with mild, completely non-spicy Indian dietary templates. Every single ingredient avoids high-purine sources (no beef, no organ meats, no shellfish, no seafood) to mitigate gout triggers, while presenting strict lean proteins and high-fiber legumes to slow carbohydrate absorption and align with GLP-1 therapeutic pacing.
+                </p>
+                <div id="detailed-calendar-list" style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: PROCUREMENT ROUTING COMPARE & MATRIX SHEET -->
+        <div id="panel-procurement" class="tab-panel">
+            <div class="card">
+                <div class="card-title">🛒 Multi-Store Channel Pricing Comparison Map &amp; Arbitrage Tracker</div>
+                <div style="margin-bottom: 20px; font-size: 14px; color: var(--apple-secondary);">
+                    Comparison matrices detailing real-time in-store walk-in shelf procurement valuations against Instacart delivery network pricing for **Publix Super Markets** and **Costco Wholesale Club**.
+                </div>
+                <table class="channel-table">
+                    <thead>
+                        <tr>
+                            <th>Ingredient Core Item</th>
+                            <th>Target Source Network</th>
+                            <th>In-Store Shelf Valuation</th>
+                            <th>Instacart Network Pricing</th>
+                            <th>Channel Markup Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="procurement-rows">
+                        <!-- Dynamic items -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Immutably Structured Menu Data optimized for Gout, T2D, GLP-1, 52-year-old, Mild Indian / Simple Western
+        const weeklyMenu = {
+            "Monday": {
+                breakfast: { name: "Mild Vegetable Upma", desc: "Coarse semolina with tiny carrot cubes, no green chilies, high hydration.", p: 12, c: 32, f: 4 },
+                lunch: { name: "Lean Turkey Breast & Spinach Roll", desc: "Whole grain wrap with steamed low-fat breast shavings, crisp mustard touch.", p: 34, c: 20, f: 6 },
+                dinner: { name: "Yellow Moong Dal Lentil Mash", desc: "Spiceless split yellow lentils with cumin and turmeric, paired with ragi flatbread.", p: 26, c: 42, f: 5 },
+                snack1: { name: "Greek Yogurt (Plain, Non-fat)", desc: "High calcium, pure protein matrix to stabilize early insulin spikes.", p: 15, c: 6, f: 0 },
+                snack2: { name: "Boiled Egg White Caps", desc: "Two egg whites, zero yolk to control saturated fats and purines.", p: 7, c: 1, f: 0 }
+            },
+            "Tuesday": {
+                breakfast: { name: "Steel-Cut Cinnamon Oats", desc: "Boiled in unsweetened almond milk, dusted with true Ceylon cinnamon.", p: 10, c: 28, f: 5 },
+                lunch: { name: "Non-Spicy Chicken Tikka Salad", desc: "Yogurt-marinated skinless breast bits grilled plain, shredded over mixed baby greens.", p: 38, c: 12, f: 7 },
+                dinner: { name: "Baked Tofu Cubes & Brown Rice", desc: "Firm unflavored tofu seared with olive oil spray, small scoop of brown fiber rice.", p: 24, c: 35, f: 8 },
+                snack1: { name: "Sliced English Cucumbers", desc: "High water volume, zero purine payload.", p: 1, c: 3, f: 0 },
+                snack2: { name: "Roasted Chana (Chickpeas)", desc: "Plain dry-roasted without chili powder, crunchy fiber focus.", p: 8, c: 18, f: 2 }
+            },
+            "Wednesday": {
+                breakfast: { name: "Paneer & Spinach Scramble", desc: "Low-fat unspiced house paneer mashed with chopped spinach leaves.", p: 18, c: 5, f: 9 },
+                lunch: { name: "Moong Dal & Quinoa Blend bowl", desc: "Thick lentil pot mixed with organic parboiled quinoa seed grains.", p: 22, c: 38, f: 4 },
+                dinner: { name: "Grilled Herb Chicken Cutlet", desc: "Marinated solely in rosemary, parsley, and olive oil; side of steamed broccoli.", p: 40, c: 8, f: 6 },
+                snack1: { name: "Plain Skim Cottage Cheese", desc: "Slow-digesting casein core ideal for GLP-1 maintenance phases.", p: 14, c: 4, f: 0 },
+                snack2: { name: "Almond Shavings (Small Handful)", desc: "Cardio-protective monounsaturated fat trace.", p: 6, c: 5, f: 14 }
+            },
+            "Thursday": {
+                breakfast: { name: "Mild Vegetable Rava Idli", desc: "Two steamed savory cakes containing grated zucchini, side of curd dip.", p: 11, c: 30, f: 2 },
+                lunch: { name: "Shredded Chicken Breast Breast Wrap", desc: "Plain boiled chicken mixed with low-fat yogurt dressing in whole wheat pita.", p: 36, c: 22, f: 5 },
+                dinner: { name: "Stewed Black Lentils (Mild)", desc: "Mashed black grams without rich butter or heavy cream matrices; plain basmati touch.", p: 20, c: 44, f: 3 },
+                snack1: { name: "Boiled Egg White Caps", desc: "Two pure albumen cups.", p: 7, c: 1, f: 0 },
+                snack2: { name: "Celery Sticks with Hummus", desc: "No-garlic plain chickpea puree on celery.", p: 4, c: 10, f: 5 }
+            },
+            "Friday": {
+                breakfast: { name: "Chia Seed Fiber Pudding", desc: "Soaked overnight in plain soy milk with pure vanilla extract drop.", p: 9, c: 16, f: 8 },
+                lunch: { name: "Cumin-Sautéed Tofu & Peas", desc: "Mild Indian style stir fry with unspiced green peas and soft bean curd block.", p: 22, c: 24, f: 7 },
+                dinner: { name: "Turkey Meatball Broth Pot", desc: "Lean ground turkey rolled with oats, simmered in clear sodium-free vegetable broth.", p: 32, c: 14, f: 6 },
+                snack1: { name: "Greek Yogurt (Plain, Non-fat)", desc: "Probiotic digestive alignment base.", p: 15, c: 6, f: 0 },
+                snack2: { name: "Roasted Chana (Chickpeas)", desc: "Simple high-fiber tracking crunch.", p: 8, c: 18, f: 2 }
+            },
+            "Saturday": {
+                breakfast: { name: "Mild Oats Upma Framework", desc: "Rolled oats steamed with roasted cumin seeds and diced chayote squash.", p: 12, c: 26, f: 4 },
+                lunch: { name: "Lemon-Herb Shredded Chicken Salad", desc: "Skinless chicken pulled fine, mixed with lemon squeeze and celery crunch.", p: 38, c: 8, f: 5 },
+                dinner: { name: "Paneer Bhurji (Mild & Clean)", desc: "Crumbled low-fat paneer cooked lightly with turmeric, cilantro, and diced tomatoes.", p: 25, c: 10, f: 12 },
+                snack1: { name: "Sliced English Cucumbers", desc: "Hydration asset supporting uric acid clearance profiles.", p: 1, c: 3, f: 0 },
+                snack2: { name: "Plain Skim Cottage Cheese", desc: "Stable amino payload block.", p: 14, c: 4, f: 0 }
+            },
+            "Sunday": {
+                breakfast: { name: "Egg White Veggie Omelet", desc: "Three egg whites folded over steamed green bell peppers and parsley leaves.", p: 14, c: 4, f: 1 },
+                lunch: { name: "Thick Yellow Mung Bean Soup", desc: "Purine-safe lentil pot soup base served with half slice multi-seed bread.", p: 18, c: 28, f: 3 },
+                dinner: { name: "Slow-Braised Chicken Breast Chunks", desc: "Cooked tender in tomato-basil puree without spices, side of ragi porridge mush.", p: 42, c: 20, f: 6 },
+                snack1: { name: "Almond Shavings (Small Handful)", desc: "Controlled healthy fat buffer.", p: 6, c: 5, f: 14 },
+                snack2: { name: "Celery Sticks with Hummus", desc: "Crisp crunch tracking node.", p: 4, c: 10, f: 5 }
+            }
+        };
+
+        const procurementItems = [
+            { name: "Organic Skinless Chicken Breasts (Bulk Log)", store: "Costco Warehouse", instore: 32.50 },
+            { name: "Lean Ground Turkey Pack (99% Fat Free)", store: "Publix Super Markets", instore: 8.99 },
+            { name: "Low-Fat Artisan Paneer Block Core", store: "Publix Super Markets", instore: 6.49 },
+            { name: "Yellow Moong Dal Split Lentil Bag", store: "Publix Super Markets", instore: 3.29 },
+            { name: "Organic Quinoa Grain Reservoir Bag", store: "Costco Warehouse", instore: 11.99 },
+            { name: "Plain Non-Fat Greek Yogurt (Multi-Tub)", store: "Costco Warehouse", instore: 9.50 },
+            { name: "Fresh Crisp Baby Spinach Boxes", store: "Publix Super Markets", instore: 4.99 },
+            { name: "Organic Steel-Cut Fiber Oats Drum", store: "Costco Warehouse", instore: 7.99 }
+        ];
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const btn = document.querySelector('.collapse-btn');
+            sb.classList.toggle('collapsed');
+            document.body.classList.toggle('sidebar-collapsed');
+            if(sb.classList.contains('collapsed')) {
+                btn.innerHTML = "▸";
+            } else {
+                btn.innerHTML = "◂";
+            }
+        }
+
+        function switchTab(tabId) {
+            // Remove active classes
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            
+            // Set targeted active layers explicitly
+            document.getElementById('panel-' + tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        function populateWeeklyCalendar() {
+            const container = document.getElementById('calendar-container');
+            const detailedContainer = document.getElementById('detailed-calendar-list');
+            container.innerHTML = '';
+            detailedContainer.innerHTML = '';
+
+            for (const [day, meals] of Object.entries(weeklyMenu)) {
+                // Render dashboard mini layout cards
+                let dayHtml = `
+                    <div class="day-column">
+                        <div class="day-title">${day}</div>
+                        <div class="meal-slot">
+                            <div class="meal-tag">🍳 Breakfast</div>
+                            <div class="meal-name">${meals.breakfast.name}</div>
+                        </div>
+                        <div class="meal-slot">
+                            <div class="meal-tag">🥗 Lunch</div>
+                            <div class="meal-name">${meals.lunch.name}</div>
+                        </div>
+                        <div class="meal-slot">
+                            <div class="meal-tag">🍲 Dinner</div>
+                            <div class="meal-name">${meals.dinner.name}</div>
+                        </div>
+                        <div class="meal-slot">
+                            <div class="meal-tag">🍿 Snack 1</div>
+                            <div class="meal-name">${meals.snack1.name}</div>
+                        </div>
+                        <div class="meal-slot">
+                            <div class="meal-tag">🍪 Snack 2</div>
+                            <div class="meal-name">${meals.snack2.name}</div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += dayHtml;
+
+                // Render expanded detail view page listings
+                let detailedHtml = `
+                    <div style="background: #fbfbfd; border: 1px solid var(--apple-border); padding: 20px; border-radius: 12px;">
+                        <h4 style="font-size: 16px; margin-bottom: 12px; color: var(--apple-accent); font-weight: 600;">${day} Architectural Blueprint Details</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+                            <div><strong>Breakfast:</strong> ${meals.breakfast.name}<br><small style="color:var(--apple-secondary);">${meals.breakfast.desc}</small><br><span style="font-size:11px;color:var(--apple-accent);">P: ${meals.breakfast.p}g | C: ${meals.breakfast.c}g</span></div>
+                            <div><strong>Lunch:</strong> ${meals.lunch.name}<br><small style="color:var(--apple-secondary);">${meals.lunch.desc}</small><br><span style="font-size:11px;color:var(--apple-accent);">P: ${meals.lunch.p}g | C: ${meals.lunch.c}g</span></div>
+                            <div><strong>Dinner:</strong> ${meals.dinner.name}<br><small style="color:var(--apple-secondary);">${meals.dinner.desc}</small><br><span style="font-size:11px;color:var(--apple-accent);">P: ${meals.dinner.p}g | C: ${meals.dinner.c}g</span></div>
+                            <div><strong>Snack 1:</strong> ${meals.snack1.name}<br><small style="color:var(--apple-secondary);">${meals.snack1.desc}</small><br><span style="font-size:11px;color:var(--apple-accent);">P: ${meals.snack1.p}g | C: ${meals.snack1.c}g</span></div>
+                            <div><strong>Snack 2:</strong> ${meals.snack2.name}<br><small style="color:var(--apple-secondary);">${meals.snack2.desc}</small><br><span style="font-size:11px;color:var(--apple-accent);">P: ${meals.snack2.p}g | C: ${meals.snack2.c}g</span></div>
+                        </div>
+                    </div>
+                `;
+                detailedContainer.innerHTML += detailedHtml;
+            }
+        }
+
+        function updateDashboardMetrics() {
+            // Get knob slider parameter states safely
+            const budget = parseFloat(document.getElementById('slide-budget').value) || 0;
+            const spoil = parseFloat(document.getElementById('slide-spoil').value) || 0;
+            const arbitrage = parseFloat(document.getElementById('slide-arbitrage').value) || 0;
+            const targetProt = parseFloat(document.getElementById('slide-protein-target').value) || 110;
+
+            // Reflect state labels instantly
+            document.getElementById('lbl-budget').innerText = "$" + budget;
+            document.getElementById('lbl-spoil').innerText = spoil + " Days";
+            document.getElementById('lbl-arbitrage').innerText = arbitrage.toFixed(2) + "x";
+            document.getElementById('lbl-protein-target').innerText = targetProt + "g";
+
+            // Recalculate MeAgain analytics readouts dynamically based on mathematical limits
+            const wastageProb = Math.min(100, Math.max(5, Math.round((spoil / 7) * 28)));
+            const complianceScore = Math.min(100, Math.max(70, Math.round(100 - Math.abs(112 - targetProt))));
+            const markupDiff = ((arbitrage - 1) * 100).toFixed(1);
+
+            document.getElementById('val-wastage').innerText = wastageProb + "%";
+            document.getElementById('val-compliance').innerText = complianceScore + "%";
+            document.getElementById('val-differential').innerText = "+" + markupDiff + "%";
+
+            // Manage coloring states smoothly matching apple system behaviors
+            const wastageEl = document.getElementById('val-wastage');
+            if(wastageProb > 25) { wastageEl.className = "metric-pill-val text-danger"; }
+            else if(wastageProb > 15) { wastageEl.className = "metric-pill-val text-warning"; }
+            else { wastageEl.className = "metric-pill-val text-success"; }
+
+            // Recalculate and render Feature 2 Live SVG panel scaling rules
+            const targetHeightProt = Math.min(160, Math.max(30, (112 / targetProt) * 125));
+            const pBar = document.getElementById('bar-protein');
+            pBar.setAttribute('height', targetHeightProt);
+            pBar.setAttribute('y', 170 - targetHeightProt);
+            document.getElementById('txt-svg-protein').innerText = "112g";
+            document.getElementById('txt-svg-protein').setAttribute('y', 162 - targetHeightProt);
+
+            // Re-render multi-store pricing grid arrays natively
+            populateProcurementMatrix(arbitrage);
+        }
+
+        function populateProcurementMatrix(arbitrageMultiplier) {
+            const tableBody = document.getElementById('procurement-rows');
+            tableBody.innerHTML = '';
+
+            procurementItems.forEach(item => {
+                // Calculate delivery premium using real-time dynamic slider multipliers
+                const instacartPrice = (item.instore * arbitrageMultiplier).toFixed(2);
+                const variance = ((arbitrageMultiplier - 1) * 100).toFixed(0);
+
+                let row = `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td><span class="badge-store">${item.store}</span></td>
+                        <td><span class="price-instore">$${item.instore.toFixed(2)}</span></td>
+                        <td><span class="price-instart">$${instacartPrice}</span></td>
+                        <td><span class="text-warning">+${variance}% Delivery Markup</span></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        window.onload = function() {
+            populateWeeklyCalendar();
+            updateDashboardMetrics();
+        };
+    </script>
+</body>
+</html>
